@@ -62,7 +62,6 @@
     ```bash
     git clone https://github.com/NINIYOYYO/parakeet-tdt-0.6b-v2-SRT-GUI.git
     ```
-    (请将 `your-username/your-repository-name` 替换为你的实际 GitHub 用户名和仓库名)
 
 2.  **创建并激活 Python 虚拟环境 (强烈推荐):**
     ```bash
