@@ -1,0 +1,18 @@
+
+
+
+nemo_toolkit[asr]
+# Pydub for audio manipulation
+pydub>=0.25.1
+
+# Gradio for the web interface
+gradio>=5.29.0
+
+
+# Note on ffmpeg:
+# This project requires ffmpeg to be installed separately and available in the system PATH.
+# ffmpeg is not a Python package and cannot be installed via pip.
+
+# 关于 ffmpeg 的说明：
+# 此项目需要单独安装 ffmpeg，并使其在系统 PATH 中可用。
+# ffmpeg 不是一个 Python 包，不能通过 pip 安装。
