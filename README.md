@@ -34,6 +34,8 @@
 
 2.  **双击打开install_dependencies.bat**
     它会创建并激活Python 虚拟环境同时检查和安装依赖
+    torch的安装要看你是否需要GPU进行加速
+    
 
 3.  **安装 FFmpeg:**
     本项目依赖 FFmpeg 进行音频提取和预处理。你需要单独安装它，并确保其可执行文件路径已添加到系统的 PATH 环境变量中。
@@ -129,43 +131,22 @@
 
 
 
-## `requirements.txt` 示例内容
 
-```txt
-# NeMo Toolkit (包含 ASR 功能)
-nemo_toolkit[asr]>=2.3.0 # 请使用你测试通过的 NeMo 版本
-
-# Pydub 用于音频处理
-pydub>=0.25.1
-
-# Gradio 用于构建 Web 界面
-gradio>=5.29.0 # 请使用你测试通过的 Gradio 版本
-
-# ---
-# 关于 PyTorch 的重要说明 (特别是 GPU 用户):
-# 为了获得 GPU 支持，强烈建议在运行 "pip install -r requirements.txt" 之前手动安装 PyTorch。
-# 请访问 https://pytorch.org/get-started/locally/ 获取适合您系统和 CUDA 版本的正确安装命令。
-# 这样可以确保 nemo_toolkit 使用您已安装的、支持 CUDA 的 PyTorch 版本。
-# 如果未预先安装 PyTorch，nemo_toolkit[asr] 可能会安装一个仅支持 CPU 的版本。
-# ---
-
-# 关于 ffmpeg 的说明：
-# 本项目需要单独安装 ffmpeg，并使其在系统 PATH 中可用。
-# ffmpeg 不是一个 Python 包，不能通过 pip 安装。
-
-使用方法
+## 使用方法
 
 确保你已按照上述步骤完成环境配置和依赖安装。
 
 在项目根目录下，运行主脚本：
 
-python main.py
-IGNORE_WHEN_COPYING_START
-content_copy
-download
-Use code with caution.
-Bash
-IGNORE_WHEN_COPYING_END
+启动方式分两种
+1. **运行launcher.bat进行启动**
+
+2. **在终端启动(进入虚拟环境)**
+    ```bash
+    python main.py
+    ```
+
+
 
 脚本启动后，会在终端打印出一个本地 URL (通常是 http://127.0.0.1:7860 或类似地址)。在浏览器中打开此 URL 即可访问 Gradio 用户界面。
 

@@ -1,97 +1,109 @@
 @echo off
-echo ¿ªÊ¼»·¾³ÅäÖÃºÍÒÀÀµ°²×°...
-
-REM ¼ì²é Python ÊÇ·ñ°²×°
+chcp 65001
+echo å¼€å§‹çŽ¯å¢ƒé…ç½®å’Œä¾èµ–å®‰è£…...
+REM æ£€æŸ¥ Python æ˜¯å¦å®‰è£…
 python --version >nul 2>&1
 if %errorlevel% neq 0 (
-    echo ´íÎó£ºÎ´ÕÒµ½ Python¡£ÇëÏÈ°²×°Python 3.12.2 »ò¸ü¸ß°æ±¾ ²¢½«ÆäÌí¼Óµ½ PATH¡£
-    echo Äú¿ÉÒÔ´Ó https://www.python.org/downloads/ ÏÂÔØ¡£
+echo é”™è¯¯ï¼šæœªæ‰¾åˆ° Pythonã€‚è¯·å…ˆå®‰è£…Python 3.12.2 æˆ–æ›´é«˜ç‰ˆæœ¬ å¹¶å°†å…¶æ·»åŠ åˆ° PATHã€‚
+echo æ‚¨å¯ä»¥ä»Ž https://www.python.org/downloads/ ä¸‹è½½ã€‚
+pause
+exit /b
+)
+echo Python å·²æ£€æµ‹åˆ°ã€‚
+
+
+REM æ£€æŸ¥è™šæ‹ŸçŽ¯å¢ƒæ˜¯å¦å­˜åœ¨
+if not exist .\.venv\Scripts\activate.bat (
+	REM åˆ›å»ºè™šæ‹ŸçŽ¯å¢ƒ
+	echo æ­£åœ¨åˆ›å»ºè™šæ‹ŸçŽ¯å¢ƒ .venv...
+	python -m venv .venv
+	if %errorlevel% neq 0 (
+	echo é”™è¯¯ï¼šåˆ›å»ºè™šæ‹ŸçŽ¯å¢ƒå¤±è´¥ã€‚
+	pause
+	exit /b
+	)
+	echo è™šæ‹ŸçŽ¯å¢ƒ .venv åˆ›å»ºæˆåŠŸã€‚
     pause
     exit /b
 )
-echo Python ÒÑ¼ì²âµ½¡£
 
-REM ´´½¨ÐéÄâ»·¾³
-echo ÕýÔÚ´´½¨ÐéÄâ»·¾³ .venv...
-python -m venv .venv
-if %errorlevel% neq 0 (
-    echo ´íÎó£º´´½¨ÐéÄâ»·¾³Ê§°Ü¡£
-    pause
-    exit /b
-)
-echo ÐéÄâ»·¾³ .venv ´´½¨³É¹¦¡£
-
-REM ¼¤»îÐéÄâ»·¾³
-echo ÕýÔÚ¼¤»îÐéÄâ»·¾³...
+REM æ¿€æ´»è™šæ‹ŸçŽ¯å¢ƒ
 call .\.venv\Scripts\activate.bat
-REM ÔÚÍ¬Ò»¸ö½Å±¾ÖÐ£¬¼¤»îºó£¬ºóÐøµÄ pip ºÍ python ÃüÁî¾Í»áÔÚ¸ÃÐéÄâ»·¾³ÄÚÖ´ÐÐ
+echo è™šæ‹ŸçŽ¯å¢ƒå·²æ¿€æ´»ã€‚
 
-REM ÌáÊ¾ÓÃ»§Ñ¡Ôñ PyTorch °æ±¾
 echo.
 echo ===============================================================================
-echo ¹ØÓÚ PyTorch °²×° (ÖØÒª£¡)£º
+echo å…³äºŽ PyTorch å®‰è£… (é‡è¦ï¼)ï¼š
 echo ===============================================================================
-echo Èç¹ûÄúÓÐ NVIDIA GPU ²¢Ï£ÍûÊ¹ÓÃ CUDA ¼ÓËÙ£¬Ç¿ÁÒ½¨ÒéÄú£º
-echo   1. ·ÃÎÊ PyTorch ¹ÙÍø (https://pytorch.org/get-started/locally/)
-echo   2. »ñÈ¡ÊÊºÏÄú CUDA °æ±¾µÄ PyTorch °²×°ÃüÁî¡£
-echo   3. ÔÚ¡¾ÐÂµÄÃüÁîÐÐ´°¿ÚÖÐÏÈ¼¤»î´ËÐéÄâ»·¾³(.venv\Scripts\activate)¡¿£¬
-echo      È»ºó¡¾ÊÖ¶¯Ö´ÐÐ¡¿¸Ã PyTorch °²×°ÃüÁî¡£
-echo   4. ÊÖ¶¯°²×° PyTorch GPU °æ±¾¡¾Ö®ºó¡¿£¬ÔÙ»Øµ½¡¾´Ë´°¿Ú¡¿°´ 'n' Ìø¹ý×Ô¶¯°²×°¡£
+echo å¦‚æžœæ‚¨æœ‰ NVIDIA GPU å¹¶å¸Œæœ›ä½¿ç”¨ CUDA åŠ é€Ÿï¼Œå¼ºçƒˆå»ºè®®æ‚¨ï¼š
+echo   1. è®¿é—® PyTorch å®˜ç½‘ (https://pytorch.org/get-started/locally/)
+echo   2. èŽ·å–é€‚åˆæ‚¨ CUDA ç‰ˆæœ¬çš„ PyTorch å®‰è£…å‘½ä»¤ã€‚
+echo   3. åœ¨ã€æ–°çš„å‘½ä»¤è¡Œçª—å£ä¸­å…ˆæ¿€æ´»æ­¤è™šæ‹ŸçŽ¯å¢ƒ(.venv\Scripts\activate)ã€‘ï¼Œ
+echo      ç„¶åŽã€æ‰‹åŠ¨æ‰§è¡Œã€‘è¯¥ PyTorch å®‰è£…å‘½ä»¤ã€‚
+echo   4. æ‰‹åŠ¨å®‰è£… PyTorch GPU ç‰ˆæœ¬ã€ä¹‹åŽã€‘ï¼Œå†å›žåˆ°ã€æ­¤çª—å£ã€‘æŒ‰ 'n' è·³è¿‡è‡ªåŠ¨å®‰è£…ã€‚
 echo.
-echo Èç¹ûÄú²»È·¶¨¡¢Ö»ÏëÊ¹ÓÃ CPU£¬»òÕßÒÑÊÖ¶¯°²×° GPU °æ PyTorch£¬
-echo ½Å±¾¿ÉÒÔ³¢ÊÔ°²×°Ò»¸öÍ¨ÓÃµÄ PyTorch (Í¨³£ÊÇCPU°æ)£¬»òÕßÌø¹ý¡£
+echo å¦‚æžœæ‚¨ä¸ç¡®å®šã€åªæƒ³ä½¿ç”¨ CPUï¼Œæˆ–è€…å·²æ‰‹åŠ¨å®‰è£… GPU ç‰ˆ PyTorchï¼Œ
+echo è„šæœ¬å¯ä»¥å°è¯•å®‰è£…ä¸€ä¸ªé€šç”¨çš„ PyTorch (é€šå¸¸æ˜¯CPUç‰ˆ)ï¼Œæˆ–è€…è·³è¿‡ã€‚
 echo ===============================================================================
 echo.
 
-:pytorch_choice_prompt
-set "install_pytorch_choice="
-set /p install_pytorch_choice="ÄúÊÇ·ñÒÑÊÖ¶¯°²×° PyTorch GPU °æ±¾£¿(y/n£¬ÊäÈë 'y' Ìø¹ý×Ô¶¯°²×°£¬'n' ÈÃ½Å±¾³¢ÊÔ°²×°): "
 
-if /i "%install_pytorch_choice%"=="y" (
-    echo ÄúÑ¡ÔñÁËÒÑÊÖ¶¯°²×°»òÌø¹ý PyTorch ×Ô¶¯°²×°¡£
-) else if /i "%install_pytorch_choice%"=="n" (
-    echo ÕýÔÚ³¢ÊÔ°²×° PyTorch (Õâ¿ÉÄÜÊÇCPU°æ±¾£¬GPUÓÃ»§ÇëÈ·±£ÒÑÊÖ¶¯°²×°GPU°æ)...
-    pip install torch torchvision torchaudio --no-cache-dir
-    if %errorlevel% neq 0 (
-        echo ¾¯¸æ£ºPyTorch ×Ô¶¯°²×°Ê§°Ü»òÓöµ½ÎÊÌâ¡£Èç¹ûÐèÒªGPUÖ§³Ö£¬ÇëÎñ±ØÊÖ¶¯°²×°¡£
-        pause
-    ) else (
-        echo PyTorch ×Ô¶¯°²×°³¢ÊÔÍê³É¡£
-    )
+set /p choice="æ˜¯å¦å®‰è£…torchï¼Ÿ(y/n): "
+if /i "%choice%"=="y" (
+	echo æ­£åœ¨torch...
+	REM å®‰è£…torch
+	pip install torch
+	if %errorlevel% neq 0 (
+		echo é”™è¯¯ï¼šå®‰è£…ä¾èµ–å¤±è´¥ã€‚
+		pause
+		exit /b
+	)
+	echo ä¾èµ–å®‰è£…æˆåŠŸã€‚
 ) else (
-    echo ÎÞÐ§ÊäÈë£¬ÇëÊäÈë y »ò n¡£
-    goto pytorch_choice_prompt
+	echo è·³è¿‡ä¾èµ–å®‰è£…ã€‚
 )
 
-REM °²×°ÆäËûÒÀÀµ
-echo.
-echo ÕýÔÚ°²×°ÆäËûÒÀÀµ (À´×Ô requirements.txt)...
-pip install -r requirements.txt --no-cache-dir
-if %errorlevel% neq 0 (
-    echo ´íÎó£º´Ó requirements.txt °²×°ÒÀÀµÊ§°Ü¡£
-    echo Çë¼ì²é requirements.txt ÎÄ¼þÊÇ·ñ´æÔÚÇÒ¸ñÊ½ÕýÈ·£¬ÒÔ¼°ÄúµÄÍøÂçÁ¬½Ó¡£
-    pause
-    exit /b
+
+set /p choice="æ˜¯å¦å®‰è£…requirementsä¾èµ–ï¼Ÿ(y/n): "
+if /i "%choice%"=="y" (
+	echo æ­£åœ¨å®‰è£…ä¾èµ–...
+	REM å®‰è£…ä¾èµ–
+	pip install -r requirements.txt
+	if %errorlevel% neq 0 (
+		echo é”™è¯¯ï¼šå®‰è£…ä¾èµ–å¤±è´¥ã€‚
+		pause
+		exit /b
+	)
+	echo ä¾èµ–å®‰è£…æˆåŠŸã€‚
+) else (
+	echo è·³è¿‡ä¾èµ–å®‰è£…ã€‚
 )
-echo ÆäËûÒÀÀµ°²×°Íê³É¡£
+
+
+echo requirementsä¾èµ–å®‰è£…å®Œæˆã€‚
 
 echo.
 echo ===============================================================================
-echo ÖØÒªÌáÊ¾£ºFFmpeg °²×° (±ØÐè)
+echo é‡è¦æç¤ºï¼šFFmpeg å®‰è£… (å¿…éœ€)
 echo ===============================================================================
-echo ±¾ÏîÄ¿ÔËÐÐÐèÒª FFmpeg¡£
-echo ÇëÈ·±£ÄúÒÑ´Ó https://ffmpeg.org/download.html (ÍÆ¼ö gyan.dev ¹¹½¨)
-echo ÏÂÔØ FFmpeg£¬²¢½«ÆäÖÐµÄ 'bin' Ä¿Â¼Â·¾¶Ìí¼Óµ½ÏµÍ³µÄ PATH »·¾³±äÁ¿ÖÐ¡£
+echo æœ¬é¡¹ç›®è¿è¡Œéœ€è¦ FFmpegã€‚
+echo è¯·ç¡®ä¿æ‚¨å·²ä»Ž https://ffmpeg.org/download.html (æŽ¨è gyan.dev æž„å»º)
+echo ä¸‹è½½ FFmpegï¼Œå¹¶å°†å…¶ä¸­çš„ 'bin' ç›®å½•è·¯å¾„æ·»åŠ åˆ°ç³»ç»Ÿçš„ PATH çŽ¯å¢ƒå˜é‡ä¸­ã€‚
 echo.
-echo ÈçºÎ¼ì²éFFmpegÊÇ·ñÅäÖÃ³É¹¦£º
-echo   ´ò¿ªÒ»¸öÐÂµÄÃüÁîÐÐ´°¿Ú£¬ÊäÈë 'ffmpeg -version'£¬Èç¹ûÏÔÊ¾°æ±¾ÐÅÏ¢Ôò±íÊ¾³É¹¦¡£
+echo å¦‚ä½•æ£€æŸ¥FFmpegæ˜¯å¦é…ç½®æˆåŠŸï¼š
+echo   æ‰“å¼€ä¸€ä¸ªæ–°çš„å‘½ä»¤è¡Œçª—å£ï¼Œè¾“å…¥ 'ffmpeg -version'ï¼Œå¦‚æžœæ˜¾ç¤ºç‰ˆæœ¬ä¿¡æ¯åˆ™è¡¨ç¤ºæˆåŠŸã€‚
 echo ===============================================================================
 echo.
-echo ËùÓÐÒÀÀµÏîµÄ°²×°Á÷³ÌÒÑÖ´ÐÐÍê±Ï¡£
+echo æ‰€æœ‰ä¾èµ–é¡¹çš„å®‰è£…æµç¨‹å·²æ‰§è¡Œå®Œæ¯•ã€‚
 echo.
-echo ÏÂÒ»²½£º
-echo   1. Èç¹ûÄúÉÐÎ´ÅäÖÃ FFmpeg£¬ÇëÁ¢¼´ÅäÖÃ¡£
-echo   2. ÅäÖÃÍê³Éºó£¬Äú¿ÉÒÔË«»÷ÔËÐÐ 'launcher.bat' À´Æô¶¯Ó¦ÓÃ³ÌÐò¡£
+echo ä¸‹ä¸€æ­¥ï¼š
+echo   1. å¦‚æžœæ‚¨å°šæœªé…ç½® FFmpegï¼Œè¯·ç«‹å³é…ç½®ã€‚
+echo   2. é…ç½®å®ŒæˆåŽï¼Œæ‚¨å¯ä»¥åŒå‡»è¿è¡Œ 'launcher.bat' æ¥å¯åŠ¨åº”ç”¨ç¨‹åºã€‚
 echo.
 pause
 exit /b
+
+
+
+
+
