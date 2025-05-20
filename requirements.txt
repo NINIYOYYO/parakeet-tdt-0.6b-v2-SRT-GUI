@@ -1,4 +1,4 @@
-ï»¿nemo_toolkit[asr]
+nemo_toolkit[asr]
 # Pydub for audio manipulation
 pydub>=0.25.1
 
@@ -10,6 +10,6 @@ gradio>=5.29.0
 # This project requires ffmpeg to be installed separately and available in the system PATH.
 # ffmpeg is not a Python package and cannot be installed via pip.
 
-# å…³äº ffmpeg çš„è¯´æ˜ï¼š
-# æ­¤é¡¹ç›®éœ€è¦å•ç‹¬å®‰è£… ffmpegï¼Œå¹¶ä½¿å…¶åœ¨ç³»ç»Ÿ PATH ä¸­å¯ç”¨ã€‚
-# ffmpeg ä¸æ˜¯ä¸€ä¸ª Python åŒ…ï¼Œä¸èƒ½é€šè¿‡ pip å®‰ã€‚
+# ¹ØÓÚ ffmpeg µÄËµÃ÷£º
+# ´ËÏîÄ¿ĞèÒªµ¥¶À°²×° ffmpeg£¬²¢Ê¹ÆäÔÚÏµÍ³ PATH ÖĞ¿ÉÓÃ¡£
+# ffmpeg ²»ÊÇÒ»¸ö Python °ü£¬²»ÄÜÍ¨¹ı pip °²¡£
