@@ -1,176 +1,187 @@
+ # parakeet-tdt-0.6b-v2-SRT-GUI - 基于 NeMo 的视频/音频SRT字幕生成工具
 
-# parakeet-tdt-0.6b-v2-SRT-GUI - A NeMo-based Tool for Generating SRT Subtitles from Video/Audio
-[简体中文](README.zh-CN.md)
+<p align="center">
+  <a href="./README_en.md">English</a>
+</p>
 
-This project utilizes the `nvidia/parakeet-tdt-0.6b-v2` ASR (Automatic Speech Recognition) model to automatically generate timestamped SRT subtitle files from video or audio files. The interface is built with Gradio, making it easy for users to upload files and retrieve results.
+本项目使用 nvidia/parakeet-tdt-0.6b-v2 ASR (自动语音识别) 模型，能够从视频或音频文件中自动生成带时间戳的 SRT 字幕文件。界面通过 Gradio 构建，方便用户上传文件并获取结果。
 
-## Key Features
+## 主要功能
 
-  * Extracts audio from various common video formats (e.g., MP4, MKV, AVI) to generate SRT subtitles.
-  * Directly processes various common audio formats (e.g., MP3, WAV, M4A, FLAC) to generate SRT subtitles.
-  * Supports long video and audio inputs.
-  * Supports loading pre-trained Parakeet models from NVIDIA NGC (default: `nvidia/parakeet-tdt-0.6b-v2`).
-  * Supports loading local user `.nemo` model files.
-  * Adjustable audio chunk length to balance between processing speed and contextual coherence.
-  * Automatically detects CUDA-enabled GPUs and prioritizes them for accelerated processing; falls back to CPU if no GPU is available (slower).
-  * User-friendly interface for simple operation.
-  * Automatically saves the user's selected model and chunk length configuration.
-  * Supports batch transcription and mixed processing of video/audio files.
+*   从多种常见的视频格式 (如 MP4, MKV, AVI 等) 提取音频并生成SRT字幕。
+*   直接处理多种常见的音频格式 (如 MP3, WAV, M4A, FLAC 等) 生成SRT字幕。
+*   支持长视频和长音频输入
+*   支持加载 NVIDIA NGC 上的预训练 Parakeet 云端模型 (默认 `nvidia/parakeet-tdt-0.6b-v2`)。
+*   支持加载用户本地的 `.nemo` 模型文件。
+*   可调节音频处理的分块长度，以在速度和上下文连贯性之间取得平衡。
+*   自动检测 CUDA GPU，优先使用 GPU 进行加速处理；若无 GPU，则在 CPU 上运行 (速度较慢)。
+*   用户界面友好，操作简单。
+*   自动保存用户选择的模型和分块长度配置。
+*   支持批量转录和混合处理视频/音频文件
 
-## System Requirements
 
-  * Python 3.12.2 or higher, to ensure compatibility with the latest NeMo library.
-  * **FFmpeg**: Used for audio/video decoding, encoding, and format conversion. **Must be installed separately and added to the system's PATH environment variable.**
-  * NVIDIA GPU (Recommended for acceleration, requires CUDA drivers). Can run on CPU if no GPU is available, but it will be very slow.
 
-## Simplified Installation Steps (Windows)
+## 环境要求
 
-1.  **Clone this repository:**
+*   Python 3.12.2 或更高版本，确保兼容最新的 NeMo 库
+*   **FFmpeg**: 用于音视频编解码和格式转换。**必须单独安装并配置到系统 PATH 环境变量中。**
+*   NVIDIA GPU (推荐，用于加速，需要 CUDA驱动)。如果无 GPU，也可以在 CPU 上运行，但速度会非常慢。
 
+## 简化版安装步骤(windows)
+
+1.  **克隆本仓库:**
     ```bash
     git clone https://github.com/NINIYOYYO/parakeet-tdt-0.6b-v2-SRT-GUI.git
     ```
 
-2.  **Double-click `install_dependencies.bat`**
-    This will create and activate a Python virtual environment while also checking for and installing dependencies.
-    The installation of Torch depends on whether you need GPU acceleration.
+2.  **双击打开install_dependencies.bat**
+    它会创建并激活Python 虚拟环境同时检查和安装依赖
+    torch的安装要看你是否需要GPU进行加速
+    
 
-3.  **Install FFmpeg:**
-    This project relies on FFmpeg for audio extraction and preprocessing. You need to install it separately and ensure its executable path is added to your system's PATH environment variable.
-
-      * **Windows:**
-        1.  Download a pre-compiled version from the official FFmpeg download page ([https://ffmpeg.org/download.html](https://ffmpeg.org/download.html)) (e.g., builds from "gyan.dev" or "BtbN").
-        2.  Unzip the downloaded file.
-        3.  Add the path to the `bin` directory inside the unzipped folder (e.g., `C:\ffmpeg\bin`) to your system's `Path` environment variable.
-      * **Linux (Ubuntu/Debian, etc.):**
+3.  **安装 FFmpeg:**
+    本项目依赖 FFmpeg 进行音频提取和预处理。你需要单独安装它，并确保其可执行文件路径已添加到系统的 PATH 环境变量中。
+    *   **Windows:**
+        1.  从 FFmpeg 官网下载页面 ([https://ffmpeg.org/download.html](https://ffmpeg.org/download.html)) 下载预编译版本 (例如，来自 "gyan.dev" 或 "BtbN" 的构建)。
+        2.  解压下载的文件。
+        3.  将解压后文件夹内的 `bin` 目录路径 (例如 `C:\ffmpeg\bin`) 添加到系统环境变量 `Path` 中。
+    *   **Linux (Ubuntu/Debian 等):**
         ```bash
         sudo apt update && sudo apt install ffmpeg
         ```
-      * **macOS (using Homebrew):**
+    *   **macOS (使用 Homebrew):**
         ```bash
         brew install ffmpeg
         ```
 
-4.  **Double-click `launcher.bat`**
-    If your environment and dependencies are all set up correctly, you can run the project directly by double-clicking `launcher.bat`.
+3. **双击打开launcher.bat**
+    如果你的环境和依赖都安装好了，双击打开lancher.bat就可以直接运行此项目了
 
-## Detailed Installation Steps
 
-1.  **Clone this repository:**
 
+
+## 安装步骤
+
+1.  **克隆本仓库:**
     ```bash
     git clone https://github.com/NINIYOYYO/parakeet-tdt-0.6b-v2-SRT-GUI.git
     ```
 
-2.  **Create and activate a Python virtual environment (Highly Recommended):**
-
+2.  **创建并激活 Python 虚拟环境 (强烈推荐):**
     ```bash
     python -m venv .venv
     ```
-
-      * **Windows:**
+    *   Windows:
         ```bash
         .\.venv\Scripts\activate
         ```
-      * **macOS / Linux:**
+    *   macOS / Linux:
         ```bash
         source .venv/bin/activate
         ```
 
-3.  **Install PyTorch (Important: GPU users, pay close attention\!):**
-    If you want to use an NVIDIA GPU for accelerated processing (highly recommended), **be sure to manually install a PyTorch version compatible with your CUDA environment *before* installing other dependencies.**
-
-      * Press `Win+R` to open the Windows Run dialog, type `cmd`, and press Enter to open the terminal. Then, type:
-
-    <!-- end list -->
-
+3.  **安装 PyTorch (重要：GPU 用户请特别注意!):**
+    如果你希望使用 NVIDIA GPU 进行加速处理 (强烈推荐)，**请务必在安装其他依赖项之前，先手动安装一个与你的 CUDA 环境兼容的 PyTorch 版本。**
+    *   输入Win+R键打开windows系统的运行窗口输入CMD进入终端输入
     ```bash
     nvidia-smi
     ```
-
-    and press Enter to check your `CUDA Version`.
-
-      * Visit the [official PyTorch installation guide](https://pytorch.org/get-started/locally/).
-      * Select the correct installation command based on your operating system, package manager (recommend `pip`), compute platform (e.g., CUDA 11.8, CUDA 12.1), and Python version.
-      * For example, if you are using `pip` and your system has a CUDA 12.1 environment, you can run:
+    并且回车来检查你的 CUDA Version:
+    *   访问 [PyTorch 官网安装指引页面](https://pytorch.org/get-started/locally/)。
+    *   根据你的操作系统、包管理器 (推荐 `pip`)、计算平台 (例如 CUDA 11.8, CUDA 12.1) 和 Python 版本选择正确的安装命令。
+    *   例如，如果使用 `pip` 且你的系统有 CUDA 12.1 环境，可以运行：
         ```bash
         pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
         ```
+    如果跳过此步骤，或者你的系统没有 NVIDIA GPU，后续安装的 `nemo_toolkit` 可能会默认安装仅支持 CPU 的 PyTorch 版本。
 
-    If you skip this step, or if your system does not have an NVIDIA GPU, the `nemo_toolkit` installed later may default to a CPU-only version of PyTorch.
-
-4.  **Install project dependencies:**
-    After activating the virtual environment and (optionally) installing a specific version of PyTorch, run:
-
+4.  **安装项目依赖:**
+    在激活虚拟环境并（可选地）安装好特定版本 PyTorch 后，运行：
     ```bash
     pip install -r requirements.txt
     ```
+    (`requirements.txt` 内容示例见下方)
 
-5.  **Install FFmpeg:**
-    This project relies on FFmpeg for audio extraction and preprocessing. You need to install it separately and ensure its executable path is added to your system's PATH environment variable.
-
-      * **Windows:**
-        1.  Download a pre-compiled version from the official FFmpeg download page ([https://ffmpeg.org/download.html](https://ffmpeg.org/download.html)) (e.g., builds from "gyan.dev" or "BtbN").
-        2.  Unzip the downloaded file.
-        3.  Add the path to the `bin` directory inside the unzipped folder (e.g., `C:\ffmpeg\bin`) to your system's `Path` environment variable.
-      * **Linux (Ubuntu/Debian, etc.):**
+5.  **安装 FFmpeg:**
+    本项目依赖 FFmpeg 进行音频提取和预处理。你需要单独安装它，并确保其可执行文件路径已添加到系统的 PATH 环境变量中。
+    *   **Windows:**
+        1.  从 FFmpeg 官网下载页面 ([https://ffmpeg.org/download.html](https://ffmpeg.org/download.html)) 下载预编译版本 (例如，来自 "gyan.dev" 或 "BtbN" 的构建)。
+        2.  解压下载的文件。
+        3.  将解压后文件夹内的 `bin` 目录路径 (例如 `C:\ffmpeg\bin`) 添加到系统环境变量 `Path` 中。
+    *   **Linux (Ubuntu/Debian 等):**
         ```bash
         sudo apt update && sudo apt install ffmpeg
         ```
-      * **macOS (using Homebrew):**
+    *   **macOS (使用 Homebrew):**
         ```bash
         brew install ffmpeg
         ```
+6. **双击打开launcher.bat**
+    如果你的环境和依赖都安装好了，双击打开lancher.bat就可以直接运行此项目了
 
-6.  **Double-click `launcher.bat`**
-    If your environment and dependencies are all set up correctly, you can run the project directly by double-clicking `launcher.bat`.
 
-## Loading a Local Model
 
-**If you want to load the `nvidia/parakeet-tdt-0.6b-v2` model from a local path, on the first launch, enter the local path of the model in the "Local Model Path (.nemo file)" field.**
-**For example: `C:\Users\models--nvidia--parakeet-tdt-0.6b-v2\snapshots\30c5e6f557f6ba26e5819a9ed2e86f670186b43f\parakeet-tdt-0.6b-v2.nemo`**
+## 从本地加载模型
+**如果你想从本地加载nvidia/parakeet-tdt-0.6b-v2模型，初次启动时，在本地模型路径 (.nemo 文件)输入模型的本地路径**
+**例如 C:\Users\models--nvidia--parakeet-tdt-0.6b-v2\snapshots\30c5e6f557f6ba26e5819a9ed2e86f670186b43f\parakeet-tdt-0.6b-v2.nemo**
+    
 
-## Interface Preview
 
-## How to Use
+## 界面展示
+![界面展示](./README.assets/1.png)
 
-Ensure you have completed the environment setup and dependency installation as described above.
 
-There are two ways to start the application:
 
-1.  **Run `launcher.bat` to start.**
 
-2.  **Start from the terminal (after activating the virtual environment):**
 
+## 使用方法
+
+确保你已按照上述步骤完成环境配置和依赖安装。
+
+在项目根目录下，运行主脚本：
+
+启动方式分两种
+1. **运行launcher.bat进行启动**
+
+2. **在终端启动(进入虚拟环境)**
     ```bash
     python main.py
     ```
 
-After the script starts, it will print a local URL in the terminal (usually `http://127.0.0.1:7860` or similar). Open this URL in your browser to access the Gradio user interface.
 
-**Model Selection and Loading:**
 
-  * **Local Model:** Enter the full path to your `.nemo` model file in the "Local Model Path" input box, then click the "Load Local Model" button.
-  * **Cloud Model:** Simply click the "Load Cloud Model" button to download and load the default Parakeet model from NVIDIA NGC.
+脚本启动后，会在终端打印出一个本地 URL (通常是 http://127.0.0.1:7860 或类似地址)。在浏览器中打开此 URL 即可访问 Gradio 用户界面。
 
-The model loading status will be displayed in the text box below.
+模型选择与加载:
 
-**Adjusting Audio Chunk Length:**
-Use the slider to adjust the "Audio Chunk Length (seconds)". A larger chunk size can preserve more context but may increase processing time and memory consumption. A range of 60-180 seconds is recommended. This setting will be saved along with your model choice the next time you click either "Load Model" button.
+本地模型: 在 "本地模型路径" 输入框中填写你的 .nemo 模型文件的完整路径，然后点击 "加载本地模型" 按钮。
 
-**Uploading Files and Generating Subtitles:**
+云端模型: 直接点击 "加载云端模型" 按钮，将从 NVIDIA NGC 下载并加载默认的 Parakeet 模型。
 
-  * **From Video:** Switch to the "Generate from Video" tab, upload your video file by clicking the video upload area, and then click the "Start Generating SRT from Video" button.
-  * **From Audio:** Switch to the "Generate from Audio" tab, upload your audio file by clicking the audio upload area, and then click the "Start Generating SRT from Audio" button.
+模型加载状态会显示在下方的文本框中。
 
-**Viewing and Downloading Results:**
+调整音频分块长度:
+使用滑块调整 "音频分块长度 (秒)"。较大的分块可以保留更多上下文，但可能增加处理时间和内存消耗。推荐范围为 60-180 秒。此设置会在下次点击任一“加载模型”按钮时与模型选择一同保存。
 
-  * The processing status will update in real-time.
-  * Once processing is complete, you can preview the generated subtitle content in the "SRT Subtitle Result" area and click the "Download SRT File" link to download the `.srt` subtitle file.
+上传文件并生成字幕:
 
-## Notes
+从视频生成: 切换到 "从视频生成字幕" 标签页，点击视频上传区域上传你的视频文件，然后点击 "开始从视频生成 SRT" 按钮。
 
-  * Processing large files or running on a CPU may take a significant amount of time. Please be patient.
-  * The first time you load a cloud model, the model files will need to be downloaded, which may take time depending on your network speed.
-  * If you encounter any `ffmpeg`-related errors, please ensure that FFmpeg is installed and configured correctly in your system's PATH.
-  * If the script indicates it is running on the CPU, but you have an NVIDIA GPU and wish to use it, please double-check that you have correctly installed the CUDA-enabled version of PyTorch (refer to step 3 of the "Installation Steps").
+从音频生成: 切换到 "从音频生成字幕" 标签页，点击音频上传区域上传你的音频文件，然后点击 "开始从音频生成 SRT" 按钮。
+
+查看和下载结果:
+
+处理状态会实时更新。
+
+处理完成后，你可以在 "SRT字幕结果"区域预览生成的字幕内容，并点击 "下载 SRT 文件" 链接下载 .srt 字幕文件。
+
+注意事项
+
+处理大型文件或在 CPU 上运行时，可能需要较长时间，请耐心等待。
+
+首次加载云端模型时，需要下载模型文件，耗时取决于你的网络速度。
+
+如果遇到 ffmpeg 相关错误，请确保已正确安装并配置了 FFmpeg。
+
+如果脚本提示在 CPU 上运行，但你拥有 NVIDIA GPU 并希望使用它，请仔细检查 PyTorch 是否已正确安装为 CUDA 版本（参考“安装步骤”第3点）。
+
