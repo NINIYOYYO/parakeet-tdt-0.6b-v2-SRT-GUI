@@ -11,8 +11,12 @@ import json
 CONFIG_FILENAME = "config.json"
 asr_model = None  # 初始化模型变量
 device = None     # 初始化设备变量
+base_dir = os.path.dirname(os.path.abspath(__file__))
+subtitles_folder_name = "subtitles"
+subtitles_folder_path = os.path.join(base_dir, subtitles_folder_name)
 
 # --- 配置管理 ---
+
 def get_config_file_path():
     """获取脚本目录中配置文件的绝对路径。"""
     try:
@@ -154,14 +158,18 @@ def check_ffmpeg():
         print("错误：ffmpeg 未检测到或未正确安装。请安装 ffmpeg 并确保其在系统 PATH 中。")
         return False
 
-def extract_audio_from_video(input_video_path: str) -> str:
+def extract_audio_from_video(input_media_path: str) -> str:
+    """
+    使用 ffmpeg 从视频文件中提取音频并转换为 WAV 格式。
+    返回提取的音频文件路径，或在失败时返回 None。
+    """
     if not check_ffmpeg(): return None
     temp_audio_file = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
     output_audio_path = temp_audio_file.name
     temp_audio_file.close()
 
     ffmpeg_command = [
-        'ffmpeg', '-i', input_video_path, '-vn', '-acodec', 'pcm_s16le',
+        'ffmpeg', '-i', input_media_path, '-vn', '-acodec', 'pcm_s16le',
         '-ar', '16000', '-ac', '1', '-y', output_audio_path
     ]
     try:
@@ -220,6 +228,16 @@ def format_srt_time(seconds):
     return f"{hours:02}:{minutes:02}:{secs:02},{milliseconds:03}"
 
 def transcribe_audio_in_chunks(model, audio_path: str, chunk_length_ms: int) -> list:
+    """
+    将音频文件分块转录并返回带有全局时间戳的段列表。
+    ARGS:
+        model: 已加载的 NeMo ASR 模型。
+        audio_path: 音频文件路径 (假设为 WAV)。
+        chunk_length_ms: 每块的长度（毫秒）。
+    RETURNS:
+        包含 {'start': float, 'end': float, 'segment': str} 的列表。
+    
+    """
     if model is None:
         print("模型未加载，无法进行转录。")
         return []
@@ -286,6 +304,13 @@ def transcribe_audio_in_chunks(model, audio_path: str, chunk_length_ms: int) -> 
     return all_segment_timestamps
 
 def generate_srt_content(segment_timestamps: list) -> str:
+    """
+    根据时间戳列表生成 SRT 格式的字幕内容。
+    ARGS:
+        segment_timestamps: 包含 {'start': float, 'end': float, 'segment': str} 的列表。
+    RETURNS:
+        SRT 格式的字符串。
+    """
     srt_content = ""
     for i, stamp in enumerate(segment_timestamps):
         subtitle_number = i + 1
@@ -297,115 +322,75 @@ def generate_srt_content(segment_timestamps: list) -> str:
     return srt_content
 
 # --- Gradio 处理函数 ---
-def process_video_for_srt(video_file_obj, chunk_length_s: int):
+def process_media_for_srt(media_file_objs: list, chunk_length_s: int):
     if asr_model is None:
         yield "错误：ASR 模型未加载。请先加载模型。", None, ""
         return
-    if video_file_obj is None:
-        yield "请上传一个视频文件。", None, ""
+    if media_file_objs is None:
+        yield "请上传至少一个视频文件。", None, ""
         return
     
-    input_video_path = video_file_obj # Gradio Video 对象具有 .name 属性表示路径
-    print(f"开始处理视频文件: {input_video_path}")
+    output_srt_paths_for_downloads = []
     start_time_total = time.time()
-    extracted_audio_path = None
-    output_srt_path_for_download = None # 用于 Gradio File 组件
 
-    try:
-        yield "状态：正在提取音频...", None, ""
-        extracted_audio_path = extract_audio_from_video(input_video_path)
-        if not extracted_audio_path:
-            yield "错误：音频提取失败。请检查视频文件或ffmpeg安装。", None, ""
-            return
-
-        chunk_length_ms = chunk_length_s * 1000
-        yield f"状态：正在转录音频 (分块大小: {chunk_length_s}秒)...", None, ""
-        segment_timestamps = transcribe_audio_in_chunks(asr_model, extracted_audio_path, chunk_length_ms)
-
-        if not segment_timestamps:
-            yield "错误：转录未生成有效的分段时间戳。", None, ""
-            return
-
-        yield "状态：正在生成 SRT 内容...", None, ""
-        srt_content = generate_srt_content(segment_timestamps)
-
-        with tempfile.NamedTemporaryFile(mode="w", encoding='utf-8', suffix=".srt", delete=False) as tmp_srt_file:
-            tmp_srt_file.write(srt_content)
-            output_srt_path_for_download = tmp_srt_file.name
+    for media_file_obj in media_file_objs:
+        input_media_path = media_file_obj # Gradio Video 对象具有 .name 属性表示路径
+        print(f"开始处理视频/音频文件: {input_media_path}")
         
-        elapsed_time_total = time.time() - start_time_total
-        status_message = f"处理完成。总耗时 {elapsed_time_total:.2f} 秒。"
-        print(f"{status_message} SRT 文件位于: {output_srt_path_for_download}")
-        yield status_message, output_srt_path_for_download, srt_content
-
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        yield f"处理过程中发生未知错误: {e}", None, ""
-    finally:
-        if extracted_audio_path and os.path.exists(extracted_audio_path):
-            try: os.remove(extracted_audio_path)
-            except OSError as e_clean: print(f"清理临时音频文件 {extracted_audio_path} 时出错: {e_clean}")
-        # Gradio 会处理 output_srt_path_for_download（它提供的临时文件）的删除
-
-def process_audio_for_srt(audio_file_path_str, chunk_length_s: int): # 音频输入类型："filepath"
-    if asr_model is None:
-        yield "错误：ASR 模型未加载。请先加载模型。", None, ""
-        return
-    if not audio_file_path_str:
-        yield "请上传一个音频文件。", None, ""
-        return
-
-    print(f"开始处理音频文件: {audio_file_path_str}")
-    start_time_total = time.time()
-    processed_audio_path = None
-    output_srt_path_for_download = None
-
-    try:
-        if not check_ffmpeg(): # 再次检查，尽管初始检查是好的
-            yield "错误: FFMPEG 未安装或未在 PATH 中，无法处理音频。", None, ""
-            return
-
-        yield "状态：正在预处理音频文件...", None, ""
-        processed_audio_path = preprocess_direct_audio(audio_file_path_str)
-        if not processed_audio_path:
-            yield "错误：音频预处理失败。", None, ""
-            return
+        extracted_audio_path = None
+        output_srt_path_for_download = None # 用于 Gradio File 组件
         
-        chunk_length_ms = chunk_length_s * 1000
-        yield f"状态：准备转录音频 (分块大小: {chunk_length_s}秒)...", None, ""
-        segment_timestamps = transcribe_audio_in_chunks(asr_model, processed_audio_path, chunk_length_ms)
+        try:
+            yield f"状态：正在提取 {os.path.basename(input_media_path)} 的音频...", None, ""
+            extracted_audio_path = extract_audio_from_video(input_media_path)
+            if not extracted_audio_path:
+                yield "错误：音频提取失败。请检查视频文件或ffmpeg安装。", None, ""
+                return
 
-        if not segment_timestamps:
-            yield "错误：转录未生成有效的分段时间戳。", None, ""
-            return
+            chunk_length_ms = chunk_length_s * 1000
+            yield f"状态：正在转录音频 (分块大小: {chunk_length_s}秒)...", None, ""
+            segment_timestamps = transcribe_audio_in_chunks(asr_model, extracted_audio_path, chunk_length_ms)
 
-        yield "状态：正在生成 SRT 内容...", None, ""
-        srt_content = generate_srt_content(segment_timestamps)
+            if not segment_timestamps:
+                yield "错误：转录未生成有效的分段时间戳。", None, ""
+                return
 
-        with tempfile.NamedTemporaryFile(mode="w", encoding='utf-8', suffix=".srt", delete=False) as tmp_srt_file:
-            tmp_srt_file.write(srt_content)
-            output_srt_path_for_download = tmp_srt_file.name
+            yield "状态：正在生成 SRT 内容...", None, ""
+            srt_content = generate_srt_content(segment_timestamps)
+            srt_file_name = os.path.basename(input_media_path).rsplit('.', 1)[0]+'.srt'
+            if not os.path.exists(subtitles_folder_path):
+                os.makedirs(subtitles_folder_path, exist_ok=True) 
+            output_srt_path_for_download = os.path.join(subtitles_folder_path, srt_file_name)
             
-        elapsed_time_total = time.time() - start_time_total
-        status_message = f"音频处理完成。总耗时 {elapsed_time_total:.2f} 秒。"
-        print(f"{status_message} SRT 文件位于: {output_srt_path_for_download}")
-        yield status_message, output_srt_path_for_download, srt_content
+            with open(output_srt_path_for_download, "w", encoding='utf-8') as srt_file:
+                srt_file.write(srt_content)
 
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        yield f"处理音频过程中发生未知错误: {e}", None, ""
-    finally:
-        if processed_audio_path and os.path.exists(processed_audio_path) and processed_audio_path != audio_file_path_str:
-            try: os.remove(processed_audio_path)
-            except OSError as e_clean: print(f"清理预处理的音频文件 {processed_audio_path} 时出错: {e_clean}")
+            output_srt_paths_for_downloads.append(output_srt_path_for_download)
+            
+           
+            print(f"{status_message} SRT 文件位于: {output_srt_path_for_download}")
+            
+
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            yield f"处理过程中发生未知错误: {e}", None, ""
+        finally:
+            if extracted_audio_path and os.path.exists(extracted_audio_path):
+                try: os.remove(extracted_audio_path)
+                except OSError as e_clean: print(f"清理临时音频文件 {extracted_audio_path} 时出错: {e_clean}")
+
+        elapsed_time_total = time.time() - start_time_total
+        status_message = f"处理完成。总耗时 {elapsed_time_total:.2f} 秒。生成{len(output_srt_paths_for_downloads)} 个 SRT 文件。"
+        yield status_message, output_srt_paths_for_downloads, srt_content
+            # Gradio 会处理 output_srt_path_for_download（它提供的临时文件）的删除
 
 
 # --- Gradio 界面设置 ---
 if __name__ == "__main__":
     if not check_ffmpeg():
         print("重要提示: FFMPEG 未找到。视频和音频处理功能将受限或无法工作。")
+
 
     # --- 启动时模型加载逻辑 ---
     config = load_config()
@@ -472,18 +457,13 @@ if __name__ == "__main__":
         )
         gr.Markdown("---")
 
-        with gr.Tab("从视频生成字幕"):
-            video_input = gr.Video(label="上传视频文件 (例如 MP4, MKV)")
-            video_submit_button = gr.Button("开始从视频生成 SRT", variant="primary")
-        
-        with gr.Tab("从音频生成字幕"):
-            # 对于音频，type="filepath" 对于 ffmpeg 处理通常更健壮
-            audio_input = gr.Audio(label="上传音频文件 (例如 MP3, WAV, M4A)", type="filepath")
-            audio_submit_button = gr.Button("开始从音频生成 SRT", variant="primary")
+        with gr.Tab("从视频/音频生成字幕"):
+            video_input = gr.File(label="上传视频文件 (例如 MP4, MKV),或者上传音频文件 (例如 MP3, WAV, M4A)，支持音频视频混合上传", file_count='multiple')
+            media_submit_button = gr.Button("开始从视频/音频生成 SRT", variant="primary")
 
         status_output = gr.Textbox(label="处理状态", lines=1, interactive=False)
         with gr.Accordion("SRT字幕结果", open=True):
-            srt_file_output = gr.File(label="下载 SRT 文件 (.srt)", interactive=False)
+            srt_file_output = gr.File(label="下载 SRT 文件 (.srt)", interactive=False, file_count='multiple')
             srt_preview_output = gr.Textbox(label="SRT 内容预览", lines=10, max_lines=20, interactive=False)
 
         # --- 按钮点击处理程序 ---
@@ -516,17 +496,13 @@ if __name__ == "__main__":
             outputs=[model_status_output]
         )
 
-        video_submit_button.click(
-            fn=process_video_for_srt,
+        media_submit_button.click(
+            fn=process_media_for_srt,
             inputs=[video_input, chunk_slider],
             outputs=[status_output, srt_file_output, srt_preview_output]
         )
-        audio_submit_button.click(
-            fn=process_audio_for_srt,
-            inputs=[audio_input, chunk_slider],
-            outputs=[status_output, srt_file_output, srt_preview_output]
-        )
-        
+        gr.Markdown("---")
+        gr.Markdown("本地 SRT 文件保存在脚本目录下的 `subtitles` 文件夹中。")
         gr.Markdown("---")
         gr.Markdown("注意: 处理速度取决于您的硬件 (GPU/CPU) 和文件大小。")
         if device and device.type == 'cpu': # 检查设备是否已初始化
