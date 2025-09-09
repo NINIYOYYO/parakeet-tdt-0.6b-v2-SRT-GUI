@@ -404,17 +404,21 @@ def process_media_for_srt(media_file_objs: list, chunk_length_s: int):
         return
 
     output_srt_paths_for_downloads = []
+    total_files = len(media_file_objs)
     start_time_total = time.time()
 
-    for media_file_obj in media_file_objs:
+    for i, media_file_obj in enumerate(media_file_objs):
         input_media_path = media_file_obj  # Gradio Video 对象具有 .name 属性表示路径
-        print(f"开始处理视频/音频文件: {input_media_path}")
+        file_name = os.path.basename(input_media_path)
+
+        print(f"开始处理视频/音频文件， 当前: {i+1}/{total_files}, 文件名: {file_name}")
+        yield f"状态：正在处理文件, 当前：{i+1}/{total_files}, 文件名：{file_name} ...", None, ""
 
         extracted_audio_path = None
         output_srt_path_for_download = None  # 用于 Gradio File 组件
 
         try:
-            yield f"状态：正在提取 {os.path.basename(input_media_path)} 的音频...", None, ""
+            yield f"状态：正在提取 {file_name} 的音频...", None, ""
             extracted_audio_path = extract_audio_from_video(input_media_path)
             if not extracted_audio_path:
                 yield "错误：音频提取失败。请检查视频文件或ffmpeg安装。", None, ""
@@ -427,8 +431,8 @@ def process_media_for_srt(media_file_objs: list, chunk_length_s: int):
             )
 
             if not segment_timestamps:
-                yield "错误：转录未生成有效的分段时间戳。", None, ""
-                return
+                yield f"警告：转录文件 {file_name} 未生成有效的时间戳。正在跳过此文件。", None, ""
+                continue
 
             yield "状态：正在生成 SRT 内容...", None, ""
             srt_content = generate_srt_content(segment_timestamps)
@@ -446,13 +450,14 @@ def process_media_for_srt(media_file_objs: list, chunk_length_s: int):
 
             output_srt_paths_for_downloads.append(output_srt_path_for_download)
 
-            print(f"{status_message} SRT 文件位于: {output_srt_path_for_download}")
+            print(f"SRT 文件位于: {output_srt_path_for_download}")
 
         except Exception as e:
+            print(f"处理文件 {file_name} 时发生未知错误: {e}")
             import traceback
-
             traceback.print_exc()
-            yield f"处理过程中发生未知错误: {e}", None, ""
+            yield f"错误：处理文件 {file_name} 时发生未知错误: {e}。正在跳过此文件。", None, ""
+            continue
         finally:
             if extracted_audio_path and os.path.exists(extracted_audio_path):
                 try:
@@ -462,6 +467,7 @@ def process_media_for_srt(media_file_objs: list, chunk_length_s: int):
 
         elapsed_time_total = time.time() - start_time_total
         status_message = f"处理完成。总耗时 {elapsed_time_total:.2f} 秒。生成{len(output_srt_paths_for_downloads)} 个 SRT 文件。"
+        print(status_message)
         yield status_message, output_srt_paths_for_downloads, srt_content
         # Gradio 会处理 output_srt_path_for_download（它提供的临时文件）的删除
 
